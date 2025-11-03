@@ -14,16 +14,24 @@ import (
 )
 
 type Service struct {
-	store   *store.SQLite
-	scraper scraper.Scraper
-	cfg     config.Config
+	store    *store.SQLite
+	scraper  scraper.Scraper
+	cfg      config.Config
+	metadata map[string]models.BossMetadata
 }
 
 func New(st *store.SQLite, sc scraper.Scraper, cfg config.Config) *Service {
-	return &Service{store: st, scraper: sc, cfg: cfg}
-}
+	svc := &Service{store: st, scraper: sc, cfg: cfg}
 
-// StartScheduler performs a daily refresh at configured time.
+	// Load boss metadata for inclusion_range filtering
+	if meta, err := LoadBossMetadata("bosses_metadata.yaml"); err != nil {
+		log.Printf("Warning: Failed to load boss metadata: %v (filtering disabled)", err)
+	} else {
+		svc.metadata = meta
+	}
+
+	return svc
+} // StartScheduler performs a daily refresh at configured time.
 func (s *Service) StartScheduler() {
 	for {
 		next := s.nextRun()
@@ -87,7 +95,17 @@ func (s *Service) RefreshWorld(ctx context.Context, world string) error {
 }
 
 func (s *Service) Spawnables(ctx context.Context, world string) ([]models.SpawnChance, error) {
-	return s.store.GetSpawnChances(world)
+	chances, err := s.store.GetSpawnChances(world)
+	if err != nil {
+		return nil, err
+	}
+
+	// Apply inclusion_range filtering based on boss metadata
+	if len(s.metadata) > 0 {
+		chances = ApplyInclusionRange(chances, s.metadata)
+	}
+
+	return chances, nil
 }
 
 func (s *Service) Worlds(ctx context.Context) ([]string, error) {

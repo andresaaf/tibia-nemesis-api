@@ -7,7 +7,7 @@ import (
 
 	"tibia-nemesis-api/internal/models"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 type SQLite struct {
@@ -18,7 +18,7 @@ func NewSQLite(path string) (*SQLite, error) {
 	if path == "" {
 		path = "tibia-nemesis-api.db"
 	}
-	db, err := sql.Open("sqlite3", path)
+	db, err := sql.Open("sqlite", path)
 	if err != nil {
 		return nil, err
 	}
@@ -39,6 +39,7 @@ func (s *SQLite) init() error {
 			world TEXT NOT NULL,
 			name TEXT NOT NULL,
 			percent INTEGER NULL,
+			days_since_kill INTEGER NULL,
 			updated_at TIMESTAMP NOT NULL,
 			UNIQUE(world, name)
 		);
@@ -57,21 +58,26 @@ func (s *SQLite) UpsertSpawnChances(world string, entries []models.SpawnChance) 
 	if err != nil {
 		return err
 	}
-	stmt, err := tx.Prepare(`INSERT INTO spawn_chances (world, name, percent, updated_at) VALUES (?, ?, ?, ?)
-		ON CONFLICT(world, name) DO UPDATE SET percent=excluded.percent, updated_at=excluded.updated_at`)
+	stmt, err := tx.Prepare(`INSERT INTO spawn_chances (world, name, percent, days_since_kill, updated_at) VALUES (?, ?, ?, ?, ?)
+		ON CONFLICT(world, name) DO UPDATE SET percent=excluded.percent, days_since_kill=excluded.days_since_kill, updated_at=excluded.updated_at`)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 	defer stmt.Close()
 	for _, e := range entries {
-		var p interface{}
+		var p, d interface{}
 		if e.Percent != nil {
 			p = *e.Percent
 		} else {
 			p = nil
 		}
-		if _, err := stmt.Exec(world, e.Name, p, e.UpdatedAt.UTC()); err != nil {
+		if e.DaysSinceKill != nil {
+			d = *e.DaysSinceKill
+		} else {
+			d = nil
+		}
+		if _, err := stmt.Exec(world, e.Name, p, d, e.UpdatedAt.UTC()); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -80,7 +86,7 @@ func (s *SQLite) UpsertSpawnChances(world string, entries []models.SpawnChance) 
 }
 
 func (s *SQLite) GetSpawnChances(world string) ([]models.SpawnChance, error) {
-	rows, err := s.DB.Query(`SELECT name, percent, updated_at FROM spawn_chances WHERE world=? ORDER BY name ASC`, world)
+	rows, err := s.DB.Query(`SELECT name, percent, days_since_kill, updated_at FROM spawn_chances WHERE world=? ORDER BY name ASC`, world)
 	if err != nil {
 		return nil, err
 	}
@@ -89,8 +95,9 @@ func (s *SQLite) GetSpawnChances(world string) ([]models.SpawnChance, error) {
 	for rows.Next() {
 		var name string
 		var percent sql.NullInt64
+		var daysSinceKill sql.NullInt64
 		var updated time.Time
-		if err := rows.Scan(&name, &percent, &updated); err != nil {
+		if err := rows.Scan(&name, &percent, &daysSinceKill, &updated); err != nil {
 			return nil, err
 		}
 		var p *int
@@ -98,11 +105,17 @@ func (s *SQLite) GetSpawnChances(world string) ([]models.SpawnChance, error) {
 			v := int(percent.Int64)
 			p = &v
 		}
+		var d *int
+		if daysSinceKill.Valid {
+			v := int(daysSinceKill.Int64)
+			d = &v
+		}
 		out = append(out, models.SpawnChance{
-			World:     world,
-			Name:      name,
-			Percent:   p,
-			UpdatedAt: updated,
+			World:         world,
+			Name:          name,
+			Percent:       p,
+			DaysSinceKill: d,
+			UpdatedAt:     updated,
 		})
 	}
 	return out, nil
@@ -129,7 +142,7 @@ func (s *SQLite) GetBossHistory(world, name string, limit int) ([]models.SpawnCh
 	if limit <= 0 {
 		limit = 25
 	}
-	rows, err := s.DB.Query(`SELECT percent, updated_at FROM spawn_chances WHERE world=? AND name=? ORDER BY updated_at DESC LIMIT ?`, world, name, limit)
+	rows, err := s.DB.Query(`SELECT percent, days_since_kill, updated_at FROM spawn_chances WHERE world=? AND name=? ORDER BY updated_at DESC LIMIT ?`, world, name, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -137,8 +150,9 @@ func (s *SQLite) GetBossHistory(world, name string, limit int) ([]models.SpawnCh
 	var out []models.SpawnChance
 	for rows.Next() {
 		var percent sql.NullInt64
+		var daysSinceKill sql.NullInt64
 		var updated time.Time
-		if err := rows.Scan(&percent, &updated); err != nil {
+		if err := rows.Scan(&percent, &daysSinceKill, &updated); err != nil {
 			return nil, err
 		}
 		var p *int
@@ -146,11 +160,17 @@ func (s *SQLite) GetBossHistory(world, name string, limit int) ([]models.SpawnCh
 			v := int(percent.Int64)
 			p = &v
 		}
+		var d *int
+		if daysSinceKill.Valid {
+			v := int(daysSinceKill.Int64)
+			d = &v
+		}
 		out = append(out, models.SpawnChance{
-			World:     world,
-			Name:      name,
-			Percent:   p,
-			UpdatedAt: updated,
+			World:         world,
+			Name:          name,
+			Percent:       p,
+			DaysSinceKill: d,
+			UpdatedAt:     updated,
 		})
 	}
 	return out, nil

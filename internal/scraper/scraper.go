@@ -16,12 +16,13 @@ import (
 )
 
 var (
-	rowRE          = regexp.MustCompile(`<tr[^>]*id="boss-[^"]+"[^>]*>(.*?)</tr>`)
-	nameRE         = regexp.MustCompile(`class="boss-name-link"[^>]*>\s*(.*?)\s*</a>`)
-	lastSeenDaysRE = regexp.MustCompile(`(?i)(?:Last\s*Seen|Last\s*kill)[^<:]*:\s*(\d{1,4})\s*day`)
-	daysTextRE     = regexp.MustCompile(`(?i)class\s*=\s*"days-text"[^>]*>\s*(\d{1,4})\s*day(?:s)?(?:\s+ago)?`)
-	htmlTagRE      = regexp.MustCompile(`<[^>]+>`)
-	whitespaceRE   = regexp.MustCompile(`\s+`)
+	rowRE           = regexp.MustCompile(`(?s)<tr[^>]*id="boss-[^"]+"[^>]*>(.*?)</tr>`)
+	nameRE          = regexp.MustCompile(`(?s)class="boss-name-link"[^>]*>\s*(.*?)\s*</a>`)
+	daysTextRE      = regexp.MustCompile(`(?s)class\s*=\s*"days-text"[^>]*>\s*(\d{1,4})\s*day(?:s)?(?:\s+ago)?`)
+	chancePercentRE = regexp.MustCompile(`(?s)class\s*=\s*"chance-percentage[^"]*"[^>]*>\s*\((\d{1,3})%\)`)
+	noChanceRE      = regexp.MustCompile(`(?s)class\s*=\s*"chance-text[^"]*"[^>]*>\s*No\s+Chance`)
+	htmlTagRE       = regexp.MustCompile(`<[^>]+>`)
+	whitespaceRE    = regexp.MustCompile(`\s+`)
 )
 
 type Scraper interface {
@@ -72,11 +73,12 @@ func (w *WebScraper) fetchHTML(world string) ([]models.SpawnChance, error) {
 		return nil, err
 	}
 
-	return w.parseDaysSinceLastKill(world, html)
+	return w.parseSpawnChances(world, html)
 }
 
-func (w *WebScraper) parseDaysSinceLastKill(world, html string) ([]models.SpawnChance, error) {
-	out := make(map[string]int)
+func (w *WebScraper) parseSpawnChances(world, html string) ([]models.SpawnChance, error) {
+	var result []models.SpawnChance
+	now := time.Now().UTC()
 
 	rows := rowRE.FindAllStringSubmatch(html, -1)
 	for _, match := range rows {
@@ -92,51 +94,49 @@ func (w *WebScraper) parseDaysSinceLastKill(world, html string) ([]models.SpawnC
 		}
 		name := cleanHTMLText(nameMatch[1])
 
-		// Try to extract days
-		var days int
-		var found bool
+		// Check if this is a "No Chance" boss - skip these
+		if noChanceRE.MatchString(row) {
+			continue
+		}
 
-		// Try lastSeenDaysRE first
-		daysMatch := lastSeenDaysRE.FindStringSubmatch(row)
-		if len(daysMatch) >= 2 {
+		// Extract days since last kill (optional)
+		var days *int
+		if daysMatch := daysTextRE.FindStringSubmatch(row); len(daysMatch) >= 2 {
 			if d, err := strconv.Atoi(daysMatch[1]); err == nil {
-				days = d
-				found = true
+				days = &d
 			}
 		}
 
-		// Fallback to daysTextRE
-		if !found {
-			daysMatch = daysTextRE.FindStringSubmatch(row)
-			if len(daysMatch) >= 2 {
-				if d, err := strconv.Atoi(daysMatch[1]); err == nil {
-					days = d
-					found = true
-				}
+		// Extract percentage (optional - some bosses in "without prediction" section won't have this)
+		var percent *int
+		if percentMatch := chancePercentRE.FindStringSubmatch(row); len(percentMatch) >= 2 {
+			if p, err := strconv.Atoi(percentMatch[1]); err == nil {
+				percent = &p
 			}
 		}
 
-		if found {
-			out[name] = days
+		// Only include bosses that have at least one piece of data
+		if days != nil || percent != nil {
+			result = append(result, models.SpawnChance{
+				World:         world,
+				Name:          name,
+				Percent:       percent,
+				DaysSinceKill: days,
+				UpdatedAt:     now,
+			})
+			
+			logMsg := fmt.Sprintf("scraper: %s - %s:", world, name)
+			if percent != nil {
+				logMsg += fmt.Sprintf(" %d%%", *percent)
+			}
+			if days != nil {
+				logMsg += fmt.Sprintf(" (%d days)", *days)
+			}
+			log.Print(logMsg)
 		}
 	}
 
-	// Convert map to SpawnChance slice
-	// For now, we're only collecting days; percent will be computed later
-	var result []models.SpawnChance
-	now := time.Now().UTC()
-	for name, days := range out {
-		result = append(result, models.SpawnChance{
-			World:     world,
-			Name:      name,
-			Percent:   nil, // Will be computed from days in service layer
-			UpdatedAt: now,
-		})
-		// Store days temporarily - we'll need to add a field or use metadata
-		// For now, log it
-		log.Printf("scraper: %s - %s: %d days since last kill", world, name, days)
-	}
-
+	log.Printf("scraper: parsed %d bosses for %s", len(result), world)
 	return result, nil
 }
 

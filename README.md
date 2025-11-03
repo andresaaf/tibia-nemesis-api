@@ -1,5 +1,6 @@
 # tibia-nemesis-api
 
+We Vibin'
 A small Go REST API that scrapes Tibia boss data, applies spawn chance logic, and stores results for consumption by the Discord bot.
 
 ## Features
@@ -29,3 +30,8 @@ go run ./cmd/server
 ## Notes
 - The default scraper uses goquery; selectors are left as TODOs and may require tuning.
 - Percentages are capped to integers and may be null (unknown) when not determinable.
+- Boss filtering uses `bosses_metadata.yaml` with inclusion_range rules:
+  - **min_days**: Boss is hidden if days since last kill < min_days
+  - **max_days**: Boss is always shown if days since last kill >= max_days
+  - No range defined: Boss is always shown regardless of days
+- To update boss metadata, modify `Bosses.py` in the Discord bot repo, then run `py export_bosses_metadata.py` to regenerate the YAML file.

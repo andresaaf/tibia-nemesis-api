@@ -1,0 +1,314 @@
+_comment: "Boss metadata for API inclusion_range filtering.\n\nRules:\n  - min_days:\
+  \ Boss is hidden if days since last kill < min_days\n  - max_days: Boss is always\
+  \ shown if days since last kill >= max_days\n  - No inclusion_range: Boss is always\
+  \ shown regardless of days\n\nTo add filtering for a boss, add an inclusion_range\
+  \ block:\n  Boss Name:\n    name: Boss Name\n    inclusion_range:\n      min_days:\
+  \ 6\n      max_days: 17\n\nNote: This file is manually maintained. The export script\
+  \ generates the basic structure,\nbut inclusion_range values must be added manually\
+  \ based on spawn patterns.\n"
+bosses:
+  Bank Robbers (Board):
+    name: Bank Robbers (Board)
+  Albino Dragon:
+    name: Albino Dragon
+  Arachir the Ancient One:
+    name: Arachir the Ancient One
+    inclusion_range:
+      min_days: 6
+      max_days: 17
+  Arthom the Hunter:
+    name: Arthom the Hunter
+  Barbaria:
+    name: Barbaria
+    inclusion_range:
+      min_days: 8
+      max_days: 25
+  Battlemaster Zunzu:
+    name: Battlemaster Zunzu
+  Battlemaster Zunzu (West):
+    name: Battlemaster Zunzu (West)
+  Battlemaster Zunzu (Middle):
+    name: Battlemaster Zunzu (Middle)
+  Battlemaster Zunzu (East):
+    name: Battlemaster Zunzu (East)
+  Big Boss Trolliver:
+    name: Big Boss Trolliver
+    inclusion_range:
+      min_days: 3
+      max_days: 19
+  Burster:
+    name: Burster
+  Captain Jones:
+    name: Captain Jones
+    inclusion_range:
+      min_days: 6
+      max_days: 20
+  Countess Sorrow:
+    name: Countess Sorrow
+  Crustacea Gigantica:
+    name: Crustacea Gigantica
+  Cublarc the Plunderer:
+    name: Cublarc the Plunderer
+  Devovorga:
+    name: Devovorga
+  Dharalion:
+    name: Dharalion
+    inclusion_range:
+      min_days: 6
+      max_days: 15
+  Diblis the Fair:
+    name: Diblis the Fair
+    inclusion_range:
+      min_days: 10
+      max_days: 17
+  Dire Penguin:
+    name: Dire Penguin
+  Dracola:
+    name: Dracola
+  Draptor:
+    name: Draptor
+  Dreadful Disruptor:
+    name: Dreadful Disruptor
+  Dreadmaw:
+    name: Dreadmaw
+  Dreadmaw (West):
+    name: Dreadmaw (West)
+  Dreadmaw (East):
+    name: Dreadmaw (East)
+  Elvira Hammerthrust:
+    name: Elvira Hammerthrust
+  Feroxa:
+    name: Feroxa
+  Ferumbras:
+    name: Ferumbras
+  Flamecaller Zazrak:
+    name: Flamecaller Zazrak
+  Flamecaller Zazrak (Mountain):
+    name: Flamecaller Zazrak (Mountain)
+  Flamecaller Zazrak (Dojo):
+    name: Flamecaller Zazrak (Dojo)
+  Fleabringer:
+    name: Fleabringer
+  Fleabringer (North):
+    name: Fleabringer (North)
+  Fleabringer (South):
+    name: Fleabringer (South)
+  Fleabringer (Surface):
+    name: Fleabringer (Surface)
+  Foreman Kneebiter:
+    name: Foreman Kneebiter
+    inclusion_range:
+      min_days: 3
+      max_days: 22
+  Furyosa:
+    name: Furyosa
+    inclusion_range:
+      min_days: 12
+      max_days: 46
+  Gaz'haragoth:
+    name: Gaz'haragoth
+  General Murius:
+    name: General Murius
+    inclusion_range:
+      min_days: 6
+      max_days: 18
+  Ghazbaran:
+    name: Ghazbaran
+  Grandfather Tridian:
+    name: Grandfather Tridian
+    inclusion_range:
+      min_days: 6
+      max_days: 17
+  Grand Mother Foulscale:
+    name: Grand Mother Foulscale
+  Gravelord Oshuran:
+    name: Gravelord Oshuran
+    inclusion_range:
+      min_days: 7
+      max_days: 23
+  Groam:
+    name: Groam
+  Grorlam:
+    name: Grorlam
+  Hairman the Huge:
+    name: Hairman the Huge
+    inclusion_range:
+      min_days: 5
+      max_days: 22
+  Hatebreeder:
+    name: Hatebreeder
+    inclusion_range:
+      min_days: 6
+      max_days: 25
+  High Templar Cobrass:
+    name: High Templar Cobrass
+    inclusion_range:
+      min_days: 6
+      max_days: 24
+  Hirintror:
+    name: Hirintror
+  Hirintror (Nibelor):
+    name: Hirintror (Nibelor)
+  Hirintror (Mines):
+    name: Hirintror (Mines)
+  Jesse the Wicked:
+    name: Jesse the Wicked
+  Mahatheb:
+    name: Mahatheb
+  Man in the Cave:
+    name: Man in the Cave
+    inclusion_range:
+      min_days: 12
+      max_days: 30
+  Massacre:
+    name: Massacre
+  Mawhawk:
+    name: Mawhawk
+  Midnight Panther:
+    name: Midnight Panther
+  Morgaroth:
+    name: Morgaroth
+  Mornenion:
+    name: Mornenion
+  Morshabaal:
+    name: Morshabaal
+  Mr. Punish:
+    name: Mr. Punish
+  Ocyakao:
+    name: Ocyakao
+    inclusion_range:
+      min_days: 16
+      max_days: 27
+  Omrafir:
+    name: Omrafir
+  Oodok Witchmaster:
+    name: Oodok Witchmaster
+  Orshabaal:
+    name: Orshabaal
+  Robby the Reckless:
+    name: Robby the Reckless
+  Rotworm Queen:
+    name: Rotworm Queen
+  Rukor Zad:
+    name: Rukor Zad
+    inclusion_range:
+      min_days: 6
+      max_days: 25
+  Shlorg:
+    name: Shlorg
+    inclusion_range:
+      min_days: 13
+      max_days: 30
+  Sir Leopold:
+    name: Sir Leopold
+  Sir Valorcrest:
+    name: Sir Valorcrest
+    inclusion_range:
+      min_days: 5
+      max_days: 10
+  Smuggler Baron Silvertoe:
+    name: Smuggler Baron Silvertoe
+    inclusion_range:
+      min_days: 8
+      max_days: 27
+  The Abomination:
+    name: The Abomination
+  The Big Bad One:
+    name: The Big Bad One
+    inclusion_range:
+      min_days: 6
+      max_days: 21
+  The Blightfather:
+    name: The Blightfather
+  The Evil Eye:
+    name: The Evil Eye
+    inclusion_range:
+      min_days: 6
+      max_days: 19
+  The Frog Prince:
+    name: The Frog Prince
+    inclusion_range:
+      min_days: 12
+      max_days: 34
+  The Handmaiden:
+    name: The Handmaiden
+  The Hungerer:
+    name: The Hungerer
+  The Imperor:
+    name: The Imperor
+  The Manhunter:
+    name: The Manhunter
+  The Mean Masher:
+    name: The Mean Masher
+  The Old Whopper:
+    name: The Old Whopper
+    inclusion_range:
+      min_days: 5
+      max_days: 20
+  The Pale Count:
+    name: The Pale Count
+  The Plasmother:
+    name: The Plasmother
+  The Voice of Ruin:
+    name: The Voice of Ruin
+  Voice of Ruin (Ghastly):
+    name: Voice of Ruin (Ghastly)
+  The Voice of Ruin (Middle):
+    name: The Voice of Ruin (Middle)
+  The Welter:
+    name: The Welter
+    inclusion_range:
+      min_days: 16
+      max_days: 30
+  Troll Guard:
+    name: Troll Guard
+  Tyrn:
+    name: Tyrn
+  Tzumrah the Dazzler:
+    name: Tzumrah the Dazzler
+    inclusion_range:
+      min_days: 20
+      max_days: 49
+  Undead Cavebear:
+    name: Undead Cavebear
+  Warlord Ruzad:
+    name: Warlord Ruzad
+    inclusion_range:
+      min_days: 6
+      max_days: 25
+  White Pale:
+    name: White Pale
+  Wild Horse:
+    name: Wild Horse
+  Willi Wasp:
+    name: Willi Wasp
+  Xenia:
+    name: Xenia
+    inclusion_range:
+      min_days: 7
+      max_days: 27
+  Yaga the Crone:
+    name: Yaga the Crone
+    inclusion_range:
+      min_days: 5
+      max_days: 20
+  Yakchal:
+    name: Yakchal
+  Yeti:
+    name: Yeti
+  Zarabustor:
+    name: Zarabustor
+  Zevelon Duskbringer:
+    name: Zevelon Duskbringer
+    inclusion_range:
+      min_days: 6
+      max_days: 17
+  Zomba:
+    name: Zomba
+  Zulazza the Corruptor:
+    name: Zulazza the Corruptor
+  Zushuka:
+    name: Zushuka
+    inclusion_range:
+      min_days: 19
+      max_days: 30

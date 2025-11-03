@@ -16,7 +16,7 @@ func Load() Config {
 		Port:      getenv("PORT", "8080"),
 		DBPath:    getenv("DB_PATH", "tibia-nemesis-api.db"),
 		RefreshAt: getenv("REFRESH_AT", "09:00"),
-		TZ:        getenv("TZ", "Europe/Berlin"),
+		TZ:        getenv("TZ", "CET"),
 	}
 	return cfg
 }
