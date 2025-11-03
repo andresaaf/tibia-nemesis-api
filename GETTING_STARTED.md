@@ -25,7 +25,7 @@ The API will:
 
 ```powershell
 # Health check
-curl http://localhost:8080/api/v1/status
+curl "http://localhost:8080/api/v1/status"
 
 # Trigger a manual refresh for Antica world
 curl -X POST "http://localhost:8080/api/v1/refresh?world=Antica"
