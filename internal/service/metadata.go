@@ -44,7 +44,11 @@ func countWithFilters(bosses map[string]models.BossMetadata) int {
 // ApplyInclusionRange filters spawn chances based on boss metadata inclusion_range rules
 // Rules:
 // - If days < min_days: exclude boss (not ready to spawn yet)
-// - If days >= max_days: always include boss (definitely ready)
+// - If min_days <= days < max_days:
+//   - Include if boss has a spawn chance percentage (>0%)
+//   - Exclude if boss has "No Chance" (0% or nil percentage)
+//
+// - If days >= max_days: always include boss (definitely ready, even if "No Chance")
 // - If no inclusion_range defined: always include boss
 func ApplyInclusionRange(chances []models.SpawnChance, metadata map[string]models.BossMetadata) []models.SpawnChance {
 	if len(metadata) == 0 {
@@ -55,8 +59,12 @@ func ApplyInclusionRange(chances []models.SpawnChance, metadata map[string]model
 	for _, chance := range chances {
 		meta, exists := metadata[chance.Name]
 
-		// If no metadata or no inclusion_range, include it
+		// If no metadata or no inclusion_range, only include if boss has a spawn chance
 		if !exists || meta.InclusionRange == nil {
+			// Exclude "No Chance" bosses (percent is nil or 0)
+			if chance.Percent == nil || *chance.Percent == 0 {
+				continue
+			}
 			filtered = append(filtered, chance)
 			continue
 		}
@@ -76,14 +84,18 @@ func ApplyInclusionRange(chances []models.SpawnChance, metadata map[string]model
 			continue
 		}
 
-		// Always include if at or above maximum
+		// Always include if at or above maximum (even "No Chance" bosses)
 		if days >= maxDays {
 			filtered = append(filtered, chance)
 			continue
 		}
 
-		// In between min and max: include it
-		filtered = append(filtered, chance)
+		// Between min and max: only include if boss has a spawn chance
+		// Exclude "No Chance" bosses (percent is nil or 0)
+		if chance.Percent != nil && *chance.Percent > 0 {
+			filtered = append(filtered, chance)
+		}
+		// If percent is nil or 0, don't add to filtered (excluded)
 	}
 
 	return filtered

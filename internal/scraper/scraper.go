@@ -94,10 +94,8 @@ func (w *WebScraper) parseSpawnChances(world, html string) ([]models.SpawnChance
 		}
 		name := cleanHTMLText(nameMatch[1])
 
-		// Check if this is a "No Chance" boss - skip these
-		if noChanceRE.MatchString(row) {
-			continue
-		}
+		// Don't skip "No Chance" bosses anymore - let the metadata filtering handle it
+		// The inclusion_range logic will determine if they should be shown based on days
 
 		// Extract days since last kill (optional)
 		var days *int
@@ -124,7 +122,7 @@ func (w *WebScraper) parseSpawnChances(world, html string) ([]models.SpawnChance
 				DaysSinceKill: days,
 				UpdatedAt:     now,
 			})
-			
+
 			logMsg := fmt.Sprintf("scraper: %s - %s:", world, name)
 			if percent != nil {
 				logMsg += fmt.Sprintf(" %d%%", *percent)
