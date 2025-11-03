@@ -45,6 +45,9 @@ bosses:
       max_days: 20
   Countess Sorrow:
     name: Countess Sorrow
+    inclusion_range:
+      min_days: 14
+      max_days: 37
   Crustacea Gigantica:
     name: Crustacea Gigantica
   Cublarc the Plunderer:
@@ -65,6 +68,9 @@ bosses:
     name: Dire Penguin
   Dracola:
     name: Dracola
+    inclusion_range:
+      min_days: 14
+      max_days: 38
   Draptor:
     name: Draptor
   Dreadful Disruptor:
@@ -162,6 +168,9 @@ bosses:
       max_days: 30
   Massacre:
     name: Massacre
+    inclusion_range:
+      min_days: 14
+      max_days: 36
   Mawhawk:
     name: Mawhawk
   Midnight Panther:
@@ -174,6 +183,9 @@ bosses:
     name: Morshabaal
   Mr. Punish:
     name: Mr. Punish
+    inclusion_range:
+      min_days: 14
+      max_days: 38
   Ocyakao:
     name: Ocyakao
     inclusion_range:
@@ -232,10 +244,16 @@ bosses:
       max_days: 34
   The Handmaiden:
     name: The Handmaiden
+    inclusion_range:
+      min_days: 14
+      max_days: 38
   The Hungerer:
     name: The Hungerer
   The Imperor:
     name: The Imperor
+    inclusion_range:
+      min_days: 14
+      max_days: 37
   The Manhunter:
     name: The Manhunter
   The Mean Masher:
@@ -249,6 +267,9 @@ bosses:
     name: The Pale Count
   The Plasmother:
     name: The Plasmother
+    inclusion_range:
+      min_days: 14
+      max_days: 39
   The Voice of Ruin:
     name: The Voice of Ruin
   Voice of Ruin (Ghastly):
@@ -298,6 +319,9 @@ bosses:
     name: Yeti
   Zarabustor:
     name: Zarabustor
+    inclusion_range:
+      min_days: 6
+      max_days: 25
   Zevelon Duskbringer:
     name: Zevelon Duskbringer
     inclusion_range:
