@@ -40,6 +40,7 @@ func (s *SQLite) init() error {
 			name TEXT NOT NULL,
 			percent INTEGER NULL,
 			days_since_kill INTEGER NULL,
+			is_no_chance INTEGER NOT NULL DEFAULT 0,
 			updated_at TIMESTAMP NOT NULL,
 			UNIQUE(world, name)
 		);
@@ -58,8 +59,8 @@ func (s *SQLite) UpsertSpawnChances(world string, entries []models.SpawnChance) 
 	if err != nil {
 		return err
 	}
-	stmt, err := tx.Prepare(`INSERT INTO spawn_chances (world, name, percent, days_since_kill, updated_at) VALUES (?, ?, ?, ?, ?)
-		ON CONFLICT(world, name) DO UPDATE SET percent=excluded.percent, days_since_kill=excluded.days_since_kill, updated_at=excluded.updated_at`)
+	stmt, err := tx.Prepare(`INSERT INTO spawn_chances (world, name, percent, days_since_kill, is_no_chance, updated_at) VALUES (?, ?, ?, ?, ?, ?)
+		ON CONFLICT(world, name) DO UPDATE SET percent=excluded.percent, days_since_kill=excluded.days_since_kill, is_no_chance=excluded.is_no_chance, updated_at=excluded.updated_at`)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -77,7 +78,11 @@ func (s *SQLite) UpsertSpawnChances(world string, entries []models.SpawnChance) 
 		} else {
 			d = nil
 		}
-		if _, err := stmt.Exec(world, e.Name, p, d, e.UpdatedAt.UTC()); err != nil {
+		isNoChance := 0
+		if e.IsNoChance {
+			isNoChance = 1
+		}
+		if _, err := stmt.Exec(world, e.Name, p, d, isNoChance, e.UpdatedAt.UTC()); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -86,7 +91,7 @@ func (s *SQLite) UpsertSpawnChances(world string, entries []models.SpawnChance) 
 }
 
 func (s *SQLite) GetSpawnChances(world string) ([]models.SpawnChance, error) {
-	rows, err := s.DB.Query(`SELECT name, percent, days_since_kill, updated_at FROM spawn_chances WHERE world=? ORDER BY name ASC`, world)
+	rows, err := s.DB.Query(`SELECT name, percent, days_since_kill, is_no_chance, updated_at FROM spawn_chances WHERE world=? ORDER BY name ASC`, world)
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +101,9 @@ func (s *SQLite) GetSpawnChances(world string) ([]models.SpawnChance, error) {
 		var name string
 		var percent sql.NullInt64
 		var daysSinceKill sql.NullInt64
+		var isNoChance int
 		var updated time.Time
-		if err := rows.Scan(&name, &percent, &daysSinceKill, &updated); err != nil {
+		if err := rows.Scan(&name, &percent, &daysSinceKill, &isNoChance, &updated); err != nil {
 			return nil, err
 		}
 		var p *int
@@ -115,6 +121,7 @@ func (s *SQLite) GetSpawnChances(world string) ([]models.SpawnChance, error) {
 			Name:          name,
 			Percent:       p,
 			DaysSinceKill: d,
+			IsNoChance:    isNoChance == 1,
 			UpdatedAt:     updated,
 		})
 	}
@@ -142,7 +149,7 @@ func (s *SQLite) GetBossHistory(world, name string, limit int) ([]models.SpawnCh
 	if limit <= 0 {
 		limit = 25
 	}
-	rows, err := s.DB.Query(`SELECT percent, days_since_kill, updated_at FROM spawn_chances WHERE world=? AND name=? ORDER BY updated_at DESC LIMIT ?`, world, name, limit)
+	rows, err := s.DB.Query(`SELECT percent, days_since_kill, is_no_chance, updated_at FROM spawn_chances WHERE world=? AND name=? ORDER BY updated_at DESC LIMIT ?`, world, name, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -151,8 +158,9 @@ func (s *SQLite) GetBossHistory(world, name string, limit int) ([]models.SpawnCh
 	for rows.Next() {
 		var percent sql.NullInt64
 		var daysSinceKill sql.NullInt64
+		var isNoChance int
 		var updated time.Time
-		if err := rows.Scan(&percent, &daysSinceKill, &updated); err != nil {
+		if err := rows.Scan(&percent, &daysSinceKill, &isNoChance, &updated); err != nil {
 			return nil, err
 		}
 		var p *int
@@ -170,6 +178,7 @@ func (s *SQLite) GetBossHistory(world, name string, limit int) ([]models.SpawnCh
 			Name:          name,
 			Percent:       p,
 			DaysSinceKill: d,
+			IsNoChance:    isNoChance == 1,
 			UpdatedAt:     updated,
 		})
 	}
