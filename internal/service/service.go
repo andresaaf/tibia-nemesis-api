@@ -101,18 +101,43 @@ func (s *Service) Bosses(ctx context.Context, world string) (*models.BossesRespo
 		return nil, err
 	}
 
-	if len(allChances) == 0 {
-		return &models.BossesResponse{
-			World:     world,
-			UpdatedAt: time.Now().UTC(),
-			Bosses:    []models.BossInfo{},
-		}, nil
+	// Create map of existing bosses from database
+	existingBosses := make(map[string]models.SpawnChance)
+	missingFromDB := make(map[string]bool) // Track bosses added from metadata
+	latestUpdate := time.Now().UTC()
+
+	for _, chance := range allChances {
+		existingBosses[chance.Name] = chance
+		if chance.UpdatedAt.After(latestUpdate) {
+			latestUpdate = chance.UpdatedAt
+		}
+	}
+
+	// Add metadata bosses that aren't in the database yet
+	for name := range s.metadata {
+		if _, exists := existingBosses[name]; !exists {
+			existingBosses[name] = models.SpawnChance{
+				World:         world,
+				Name:          name,
+				Percent:       nil,
+				DaysSinceKill: nil,
+				IsNoChance:    false,
+				UpdatedAt:     time.Now().UTC(),
+			}
+			missingFromDB[name] = true // Mark as missing from DB (spawnable by default)
+		}
+	}
+
+	// Convert map back to slice
+	allBosses := make([]models.SpawnChance, 0, len(existingBosses))
+	for _, boss := range existingBosses {
+		allBosses = append(allBosses, boss)
 	}
 
 	// Get spawnables (filtered list)
-	spawnableChances := allChances
+	spawnableChances := allBosses
 	if len(s.metadata) > 0 {
-		spawnableChances = ApplyInclusionRange(allChances, s.metadata)
+		spawnableChances = ApplyInclusionRange(allBosses, s.metadata)
 	}
 
 	// Create a map for quick lookup
@@ -122,19 +147,17 @@ func (s *Service) Bosses(ctx context.Context, world string) (*models.BossesRespo
 	}
 
 	// Build response with all bosses
-	bosses := make([]models.BossInfo, 0, len(allChances))
-	latestUpdate := allChances[0].UpdatedAt
+	bosses := make([]models.BossInfo, 0, len(allBosses))
 
-	for _, chance := range allChances {
-		if chance.UpdatedAt.After(latestUpdate) {
-			latestUpdate = chance.UpdatedAt
-		}
+	for _, chance := range allBosses {
+		// Bosses not in DB (missing from tibia-statistic) are spawnable by default
+		spawnable := spawnableMap[chance.Name] || missingFromDB[chance.Name]
 
 		bosses = append(bosses, models.BossInfo{
 			Name:          chance.Name,
 			Percent:       chance.Percent,
 			DaysSinceKill: chance.DaysSinceKill,
-			Spawnable:     spawnableMap[chance.Name],
+			Spawnable:     spawnable,
 		})
 	}
 
