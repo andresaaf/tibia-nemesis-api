@@ -30,14 +30,14 @@ curl "http://localhost:8080/api/v1/status"
 # Trigger a manual refresh for Antica world
 curl -X POST "http://localhost:8080/api/v1/refresh?world=Antica"
 
-# Get spawn data for Antica (pre-filtered by inclusion_range)
-curl "http://localhost:8080/api/v1/spawnables?world=Antica"
+# Get all bosses with spawnable status
+curl "http://localhost:8080/api/v1/bosses?world=Antica"
 
 # List all worlds with data
 curl "http://localhost:8080/api/v1/worlds"
 
 # Get boss history
-curl "http://localhost:8080/api/v1/bosses/Furyosa/history?world=Antica"
+curl "http://localhost:8080/api/v1/boss/Furyosa/history?world=Antica"
 ```
 
 ## Configuration

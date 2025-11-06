@@ -9,11 +9,35 @@ A small Go REST API that scrapes Tibia boss data, applies spawn chance logic, an
 - Simple HTTP/JSON endpoints for the bot
 
 ## Endpoints
-- GET /api/v1/status
-- GET /api/v1/worlds
-- GET /api/v1/spawnables?world=Antica
-- GET /api/v1/bosses/{name}/history?world=Antica
-- POST /api/v1/refresh?world=Antica
+- `GET /api/v1/status` - Health check
+- `GET /api/v1/worlds` - List all worlds with data
+- `GET /api/v1/bosses?world=Antica` - Get all bosses with spawnable status
+- `GET /api/v1/boss/{name}/history?world=Antica` - Get boss history
+- `POST /api/v1/refresh?world=Antica` - Trigger manual data refresh
+
+### Response Format
+
+**`/api/v1/bosses`** returns:
+```json
+{
+  "world": "Antica",
+  "updated_at": "2025-11-06T18:30:00Z",
+  "bosses": [
+    {
+      "name": "Rukor Zad",
+      "percent": null,
+      "days_since_kill": 36,
+      "spawnable": true
+    },
+    {
+      "name": "Hirintror",
+      "percent": null,
+      "days_since_kill": 14,
+      "spawnable": true
+    }
+  ]
+}
+```
 
 ## Quick start
 

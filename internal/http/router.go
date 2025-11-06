@@ -18,8 +18,8 @@ func NewRouter(svc *service.Service) http.Handler {
 	h := NewHandlers(svc)
 	r.Get("/api/v1/status", h.Status)
 	r.Get("/api/v1/worlds", h.Worlds)
-	r.Get("/api/v1/spawnables", h.Spawnables)
-	r.Get("/api/v1/bosses/{name}/history", h.BossHistory)
+	r.Get("/api/v1/bosses", h.Bosses)
+	r.Get("/api/v1/boss/{name}/history", h.BossHistory)
 	r.Post("/api/v1/refresh", h.Refresh)
 
 	return r

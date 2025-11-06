@@ -32,18 +32,18 @@ func (h *Handlers) Worlds(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, worlds)
 }
 
-func (h *Handlers) Spawnables(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) Bosses(w http.ResponseWriter, r *http.Request) {
 	world := r.URL.Query().Get("world")
 	if world == "" {
 		writeError(w, http.StatusBadRequest, errMissing("world"))
 		return
 	}
-	list, err := h.svc.Spawnables(r.Context(), world)
+	response, err := h.svc.Bosses(r.Context(), world)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, list)
+	writeJSON(w, http.StatusOK, response)
 }
 
 func (h *Handlers) BossHistory(w http.ResponseWriter, r *http.Request) {

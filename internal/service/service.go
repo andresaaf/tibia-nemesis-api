@@ -94,18 +94,55 @@ func (s *Service) RefreshWorld(ctx context.Context, world string) error {
 	return s.store.UpsertSpawnChances(world, list)
 }
 
-func (s *Service) Spawnables(ctx context.Context, world string) ([]models.SpawnChance, error) {
-	chances, err := s.store.GetSpawnChances(world)
+// Bosses returns all bosses with their spawnable status
+func (s *Service) Bosses(ctx context.Context, world string) (*models.BossesResponse, error) {
+	allChances, err := s.store.GetSpawnChances(world)
 	if err != nil {
 		return nil, err
 	}
 
-	// Apply inclusion_range filtering based on boss metadata
-	if len(s.metadata) > 0 {
-		chances = ApplyInclusionRange(chances, s.metadata)
+	if len(allChances) == 0 {
+		return &models.BossesResponse{
+			World:     world,
+			UpdatedAt: time.Now().UTC(),
+			Bosses:    []models.BossInfo{},
+		}, nil
 	}
 
-	return chances, nil
+	// Get spawnables (filtered list)
+	spawnableChances := allChances
+	if len(s.metadata) > 0 {
+		spawnableChances = ApplyInclusionRange(allChances, s.metadata)
+	}
+
+	// Create a map for quick lookup
+	spawnableMap := make(map[string]bool)
+	for _, sc := range spawnableChances {
+		spawnableMap[sc.Name] = true
+	}
+
+	// Build response with all bosses
+	bosses := make([]models.BossInfo, 0, len(allChances))
+	latestUpdate := allChances[0].UpdatedAt
+
+	for _, chance := range allChances {
+		if chance.UpdatedAt.After(latestUpdate) {
+			latestUpdate = chance.UpdatedAt
+		}
+
+		bosses = append(bosses, models.BossInfo{
+			Name:          chance.Name,
+			Percent:       chance.Percent,
+			DaysSinceKill: chance.DaysSinceKill,
+			Spawnable:     spawnableMap[chance.Name],
+		})
+	}
+
+	return &models.BossesResponse{
+		World:     world,
+		UpdatedAt: latestUpdate,
+		Bosses:    bosses,
+	}, nil
 }
 
 func (s *Service) Worlds(ctx context.Context) ([]string, error) {
