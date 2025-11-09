@@ -33,19 +33,38 @@ func New(st *store.SQLite, sc scraper.Scraper, cfg config.Config) *Service {
 	return svc
 } // StartScheduler performs a daily refresh at configured time.
 func (s *Service) StartScheduler() {
+	log.Printf("Scheduler started. Next refresh at: %v", s.nextRun())
 	for {
 		next := s.nextRun()
 		d := time.Until(next)
+		log.Printf("Scheduler: sleeping until %v (in %v)", next, d)
 		if d > 0 {
 			time.Sleep(d)
 		}
+
+		log.Printf("Scheduler: starting automatic refresh")
 		// In absence of configured worlds list, refresh the worlds we already know
-		worlds, _ := s.store.GetWorlds()
+		worlds, err := s.store.GetWorlds()
+		if err != nil {
+			log.Printf("scheduled refresh: failed to get worlds: %v", err)
+			continue
+		}
+
+		if len(worlds) == 0 {
+			log.Printf("scheduled refresh: no worlds in database to refresh")
+			continue
+		}
+
+		log.Printf("Scheduler: refreshing %d worlds: %v", len(worlds), worlds)
 		for _, w := range worlds {
+			log.Printf("Scheduler: refreshing world %s", w)
 			if err := s.RefreshWorld(context.Background(), w); err != nil {
 				log.Printf("scheduled refresh %s: %v", w, err)
+			} else {
+				log.Printf("Scheduler: successfully refreshed %s", w)
 			}
 		}
+		log.Printf("Scheduler: refresh complete")
 	}
 }
 
