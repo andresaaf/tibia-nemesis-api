@@ -18,7 +18,7 @@ The API will:
 - Start HTTP server on port 8080
 - Create SQLite database `tibia-nemesis-api.db`
 - Load boss metadata from `bosses_metadata.yaml`
-- Schedule daily refresh at 09:00 CET
+- Schedule daily refresh at 09:30 CET
 - Log startup information
 
 ## Test the API
@@ -46,7 +46,7 @@ curl "http://localhost:8080/api/v1/boss/Furyosa/history?world=Antica"
 
 - `PORT` - HTTP server port (default: 8080)
 - `DB_PATH` - SQLite database path (default: tibia-nemesis-api.db)
-- `REFRESH_AT` - Daily refresh time HH:MM (default: 09:00)
+- `REFRESH_AT` - Daily refresh time HH:MM (default: 09:30)
 - `TZ` - Timezone for scheduler (default: CET)
 
 Example:

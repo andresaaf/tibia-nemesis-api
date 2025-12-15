@@ -4,7 +4,7 @@ We Vibin'
 A small Go REST API that scrapes Tibia boss data, applies spawn chance logic, and stores results for consumption by the Discord bot.
 
 ## Features
-- Daily refresh (09:00 by default) and on-demand refresh endpoint
+- Daily refresh (09:30 by default) and on-demand refresh endpoint
 - SQLite persistence of computed spawn percentages per world
 - Simple HTTP/JSON endpoints for the bot
 
@@ -45,7 +45,7 @@ A small Go REST API that scrapes Tibia boss data, applies spawn chance logic, an
 # From tibia-nemesis-api folder
 $env:PORT="8080"
 $env:DB_PATH="tibia-nemesis-api.db"
-$env:REFRESH_AT="09:00"
+$env:REFRESH_AT="09:30"
 $env:TZ="Europe/Berlin"
 
 go run ./cmd/server
