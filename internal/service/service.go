@@ -121,29 +121,42 @@ func (s *Service) Bosses(ctx context.Context, world string) (*models.BossesRespo
 	}
 
 	// Create map of existing bosses from database
+	// Use lower-case for all keys for case-insensitive matching
 	existingBosses := make(map[string]models.SpawnChance)
 	missingFromDB := make(map[string]bool) // Track bosses added from metadata
+	nameMap := make(map[string]string)     // lower-case name -> metadata name
 	latestUpdate := time.Now().UTC()
 
+	// Build nameMap from metadata
+	for metaName := range s.metadata {
+		nameMap[strings.ToLower(metaName)] = metaName
+	}
+
 	for _, chance := range allChances {
-		existingBosses[chance.Name] = chance
+		lc := strings.ToLower(chance.Name)
+		// If metadata has this boss, use metadata casing
+		if metaName, ok := nameMap[lc]; ok {
+			chance.Name = metaName
+		}
+		existingBosses[lc] = chance
 		if chance.UpdatedAt.After(latestUpdate) {
 			latestUpdate = chance.UpdatedAt
 		}
 	}
 
 	// Add metadata bosses that aren't in the database yet
-	for name := range s.metadata {
-		if _, exists := existingBosses[name]; !exists {
-			existingBosses[name] = models.SpawnChance{
+	for metaName := range s.metadata {
+		lc := strings.ToLower(metaName)
+		if _, exists := existingBosses[lc]; !exists {
+			existingBosses[lc] = models.SpawnChance{
 				World:         world,
-				Name:          name,
+				Name:          metaName,
 				Percent:       nil,
 				DaysSinceKill: nil,
 				IsNoChance:    false,
 				UpdatedAt:     time.Now().UTC(),
 			}
-			missingFromDB[name] = true // Mark as missing from DB (spawnable by default)
+			missingFromDB[lc] = true // Mark as missing from DB (spawnable by default)
 		}
 	}
 
@@ -162,15 +175,16 @@ func (s *Service) Bosses(ctx context.Context, world string) (*models.BossesRespo
 	// Create a map for quick lookup
 	spawnableMap := make(map[string]bool)
 	for _, sc := range spawnableChances {
-		spawnableMap[sc.Name] = true
+		spawnableMap[strings.ToLower(sc.Name)] = true
 	}
 
 	// Build response with all bosses
 	bosses := make([]models.BossInfo, 0, len(allBosses))
 
 	for _, chance := range allBosses {
+		lc := strings.ToLower(chance.Name)
 		// Bosses not in DB (missing from tibia-statistic) are spawnable by default
-		spawnable := spawnableMap[chance.Name] || missingFromDB[chance.Name]
+		spawnable := spawnableMap[lc] || missingFromDB[lc]
 
 		bosses = append(bosses, models.BossInfo{
 			Name:          chance.Name,
