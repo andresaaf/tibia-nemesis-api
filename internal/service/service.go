@@ -166,19 +166,18 @@ func (s *Service) Bosses(ctx context.Context, world string) (*models.BossesRespo
 	}
 
 	// Build response with all bosses
-	bossMap := make(map[string]models.BossInfo)
+	bosses := make([]models.BossInfo, 0, len(allBosses))
+
 	for _, chance := range allBosses {
+		// Bosses not in DB (missing from tibia-statistic) are spawnable by default
 		spawnable := spawnableMap[chance.Name] || missingFromDB[chance.Name]
-		bossMap[chance.Name] = models.BossInfo{
+
+		bosses = append(bosses, models.BossInfo{
 			Name:          chance.Name,
 			Percent:       chance.Percent,
 			DaysSinceKill: chance.DaysSinceKill,
 			Spawnable:     spawnable,
-		}
-	}
-	bosses := make([]models.BossInfo, 0, len(bossMap))
-	for _, boss := range bossMap {
-		bosses = append(bosses, boss)
+		})
 	}
 
 	return &models.BossesResponse{
