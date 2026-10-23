@@ -47,7 +47,8 @@ curl "http://localhost:8080/api/v1/boss/Furyosa/history?world=Antica"
 - `PORT` - HTTP server port (default: 8080)
 - `DB_PATH` - SQLite database path (default: tibia-nemesis-api.db)
 - `REFRESH_AT` - Daily refresh time HH:MM (default: 09:30)
-- `TZ` - Timezone for scheduler (default: CET)
+- `TZ` - Timezone for scheduler and days-since-kill (default: CET)
+- `SCRAPER` - Data source: `guildstats` (default) or `tibia-statistic`
 
 Example:
 ```powershell
@@ -82,7 +83,7 @@ This ensures the API only returns bosses that are likely to spawn based on their
 ### API not scraping data
 
 1. Check internet connection
-2. Verify tibia-statistic.com is accessible
+2. Verify the configured source (guildstats.eu or tibia-statistic.com) is accessible; a log line saying "blocked by Cloudflare challenge" means the site is refusing automated requests
 3. Check API logs for HTTP errors
 4. Try manual refresh: `curl -X POST "http://localhost:8080/api/v1/refresh?world=Antica"`
 
@@ -102,8 +103,8 @@ This ensures the API only returns bosses that are likely to spawn based on their
 
 ### Modify Scraping Logic
 
-1. Edit `internal/scraper/scraper.go`
-2. Update regex patterns if tibia-statistic.com HTML changes
+1. Edit `internal/scraper/guildstats.go` (or `tibiastatistic.go` for tibia-statistic.com)
+2. Update column lookups, regex patterns or the name alias table if the site's HTML changes
 3. Restart API to apply changes
 4. Test with manual refresh endpoint
 

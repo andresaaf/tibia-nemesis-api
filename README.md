@@ -47,12 +47,15 @@ $env:PORT="8080"
 $env:DB_PATH="tibia-nemesis-api.db"
 $env:REFRESH_AT="09:30"
 $env:TZ="Europe/Berlin"
+$env:SCRAPER="guildstats"   # or "tibia-statistic"
 
 go run ./cmd/server
 ```
 
 ## Notes
-- The default scraper uses goquery; selectors are left as TODOs and may require tuning.
+- Boss data is scraped from [guildstats.eu](https://guildstats.eu/bosses) by default. The tibia-statistic.com scraper is kept as `SCRAPER=tibia-statistic`, but that site currently blocks automated requests with a Cloudflare challenge.
+- guildstats.eu boss names are mapped to `bosses_metadata.yaml` names in `internal/scraper/guildstats.go` (e.g. `draptors` → `Draptor`, and `Fleabringer` data is copied to its location variants).
+- Bosses the source no longer reports are removed from the database on each refresh.
 - Percentages are capped to integers and may be null (unknown) when not determinable.
 - Boss filtering uses `bosses_metadata.yaml` with inclusion_range rules:
   - **min_days**: Boss is hidden if days since last kill < min_days

@@ -20,18 +20,12 @@ type Service struct {
 	metadata map[string]models.BossMetadata
 }
 
-func New(st *store.SQLite, sc scraper.Scraper, cfg config.Config) *Service {
-	svc := &Service{store: st, scraper: sc, cfg: cfg}
+// New creates the service. metadata may be nil, which disables inclusion_range filtering.
+func New(st *store.SQLite, sc scraper.Scraper, cfg config.Config, metadata map[string]models.BossMetadata) *Service {
+	return &Service{store: st, scraper: sc, cfg: cfg, metadata: metadata}
+}
 
-	// Load boss metadata for inclusion_range filtering
-	if meta, err := LoadBossMetadata("bosses_metadata.yaml"); err != nil {
-		log.Printf("Warning: Failed to load boss metadata: %v (filtering disabled)", err)
-	} else {
-		svc.metadata = meta
-	}
-
-	return svc
-} // StartScheduler performs a daily refresh at configured time.
+// StartScheduler performs a daily refresh at configured time.
 func (s *Service) StartScheduler() {
 	log.Printf("Scheduler started. Next refresh at: %v", s.nextRun())
 	for {
@@ -183,7 +177,7 @@ func (s *Service) Bosses(ctx context.Context, world string) (*models.BossesRespo
 
 	for _, chance := range allBosses {
 		lc := strings.ToLower(chance.Name)
-		// Bosses not in DB (missing from tibia-statistic) are spawnable by default
+		// Bosses not in DB (missing from the scraped source) are spawnable by default
 		spawnable := spawnableMap[lc] || missingFromDB[lc]
 
 		bosses = append(bosses, models.BossInfo{

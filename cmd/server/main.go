@@ -22,8 +22,23 @@ func main() {
 	}
 	defer st.Close()
 
-	scr := scraper.New(cfg)
-	svc := service.New(st, scr, cfg)
+	// Load boss metadata for inclusion_range filtering
+	meta, err := service.LoadBossMetadata("bosses_metadata.yaml")
+	if err != nil {
+		log.Printf("Warning: Failed to load boss metadata: %v (filtering disabled)", err)
+	}
+	knownBosses := make([]string, 0, len(meta))
+	for name := range meta {
+		knownBosses = append(knownBosses, name)
+	}
+
+	scr, err := scraper.New(cfg, knownBosses)
+	if err != nil {
+		log.Fatalf("scraper init: %v", err)
+	}
+	log.Printf("Using scraper: %s", cfg.Scraper)
+
+	svc := service.New(st, scr, cfg, meta)
 	go svc.StartScheduler()
 
 	r := httpapi.NewRouter(svc)

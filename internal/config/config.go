@@ -9,6 +9,7 @@ type Config struct {
 	DBPath    string
 	RefreshAt string // HH:MM (24h)
 	TZ        string // IANA TZ, e.g. Europe/Berlin
+	Scraper   string // data source: guildstats or tibia-statistic
 }
 
 func Load() Config {
@@ -17,6 +18,7 @@ func Load() Config {
 		DBPath:    getenv("DB_PATH", "tibia-nemesis-api.db"),
 		RefreshAt: getenv("REFRESH_AT", "9:30"),
 		TZ:        getenv("TZ", "CET"),
+		Scraper:   getenv("SCRAPER", "guildstats"),
 	}
 	return cfg
 }

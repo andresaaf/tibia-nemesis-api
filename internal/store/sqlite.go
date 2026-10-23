@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"errors"
+	"strings"
 	"time"
 
 	"tibia-nemesis-api/internal/models"
@@ -86,6 +87,19 @@ func (s *SQLite) UpsertSpawnChances(world string, entries []models.SpawnChance) 
 			tx.Rollback()
 			return err
 		}
+	}
+
+	// Remove bosses the source no longer reports, so they don't linger with frozen data
+	placeholders := make([]string, len(entries))
+	args := make([]interface{}, 0, len(entries)+1)
+	args = append(args, world)
+	for i, e := range entries {
+		placeholders[i] = "?"
+		args = append(args, e.Name)
+	}
+	if _, err := tx.Exec(`DELETE FROM spawn_chances WHERE world=? AND name NOT IN (`+strings.Join(placeholders, ",")+`)`, args...); err != nil {
+		tx.Rollback()
+		return err
 	}
 	return tx.Commit()
 }
