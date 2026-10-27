@@ -20,6 +20,8 @@ const (
 
 type Scraper interface {
 	Fetch(world string) ([]models.SpawnChance, error)
+	// Source names the site the data comes from, so clients can credit it
+	Source() models.DataSource
 }
 
 // New returns the scraper selected by cfg.Scraper. knownBosses are the boss

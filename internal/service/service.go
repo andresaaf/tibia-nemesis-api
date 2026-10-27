@@ -191,6 +191,7 @@ func (s *Service) Bosses(ctx context.Context, world string) (*models.BossesRespo
 	return &models.BossesResponse{
 		World:     world,
 		UpdatedAt: latestUpdate,
+		Source:    s.scraper.Source(),
 		Bosses:    bosses,
 	}, nil
 }

@@ -19,9 +19,16 @@ type BossInfo struct {
 	Spawnable     bool   `json:"spawnable"`
 }
 
+// DataSource identifies the site the boss data was scraped from, for crediting it
+type DataSource struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
 // BossesResponse is the wrapper for /api/v1/bosses endpoint
 type BossesResponse struct {
 	World     string     `json:"world"`
 	UpdatedAt time.Time  `json:"updated_at"`
+	Source    DataSource `json:"source"`
 	Bosses    []BossInfo `json:"bosses"`
 }

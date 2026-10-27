@@ -34,6 +34,10 @@ func NewTibiaStatistic(cfg config.Config) Scraper {
 	return &TibiaStatisticScraper{cfg: cfg}
 }
 
+func (w *TibiaStatisticScraper) Source() models.DataSource {
+	return models.DataSource{Name: "Tibia-Statistic", URL: "https://www.tibia-statistic.com"}
+}
+
 func (w *TibiaStatisticScraper) Fetch(world string) ([]models.SpawnChance, error) {
 	return w.fetchHTML(world)
 }

@@ -57,6 +57,10 @@ func NewGuildStats(cfg config.Config, knownBosses []string) Scraper {
 	return &GuildStatsScraper{cfg: cfg, known: known, now: time.Now}
 }
 
+func (g *GuildStatsScraper) Source() models.DataSource {
+	return models.DataSource{Name: "GuildStats", URL: "https://guildstats.eu"}
+}
+
 func (g *GuildStatsScraper) Fetch(world string) ([]models.SpawnChance, error) {
 	pageURL := "https://guildstats.eu/bosses?world=" + url.QueryEscape(world)
 
